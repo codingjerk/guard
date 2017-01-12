@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+eval $1
+
+while true; do
+	inotifywait -e modify "${@:2}" > /dev/null 2> /dev/null
+	eval $1
+done

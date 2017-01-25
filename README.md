@@ -17,11 +17,11 @@ $ sudo install -d /usr/bin guard
 ## Usage
 
 ```sh
-$ guard <COMMAND> <FILES TO WATCH*>
+$ guard <FILES TO WATCH*> -c <COMMAND> [-i <INIT>] [-s]
 ```
 
 As example:
 
 ```sh
-$ guard 'npm test' **/*.coffee
+$ guard **/*.coffee -sc npm test -i echo Guard started...
 ```

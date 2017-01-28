@@ -3,6 +3,13 @@
 import argparse
 
 def main():
+    # TODO: parse args
+    # TODO: check for file count (not zero)
+    # TODO: run init command if -i key setted
+    # TODO: run command if -s key setted
+    # TODO: watch for file changes
+    # TODO: run command on every file change
+    # TODO: allow to specify unique command for each file, like -u 'test {}'
     pass
 
 if __name__ == '__main__':

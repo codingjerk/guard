@@ -8,14 +8,24 @@ def main():
     pass
 
 def guard(args):
-    # TODO: run init command if -i key setted
-    # TODO: run command if -s key setted
-    # TODO: watch for file changes
-    # TODO: run command on every file change
-    pass
+    checked_run(args.init)
+    if args.run_command_on_start:
+        checked_run(args.command)
+
+    while True:
+        # TODO: wait for file changes
+        checked_run(args.command)
 
 def parse_args():
     # TODO: parse args
+    pass
+
+def checked_run(command):
+    if command is not None:
+        run(command)
+
+def run(command):
+    # TODO: run command
     pass
 
 if __name__ == '__main__':

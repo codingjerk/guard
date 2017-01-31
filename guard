@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 import sys
+import threading
 
 def main():
     args = parse_args()
@@ -68,8 +69,7 @@ def watch(files, log):
         def then(self, callback):
             while True:
                 changed_files = self.wait_for_changes()
-                # TODO: use async callback
-                callback(changed_files)
+                threading.Thread(target=callback, args=(changed_files,)).start()
 
         def wait_for_changes(self):
             cmd = ['inotifywait', '-e', 'modify', '--'] + self.files

@@ -3,7 +3,7 @@ Command line utility to run tasks on file(s) change
 
 ## Dependencies
 
-* python (any 2.x or 3.x)
+* python 3.x
 * inotify-tools
 
 ## Installation

@@ -17,10 +17,11 @@ def guard(args):
         checked_run(args.command)
 
     watch(args.files).then(lambda changed_file: [
-        checked_run(args.command)
+        checked_run(args.command),
     ])
 
 def parse_args():
+    # TODO: add loging level and allow to hide command output
     # TODO: allow to specify unique command for each file, like -u 'test {}'
     parser = argparse.ArgumentParser(description='Run commands on files changes.')
     parser.add_argument('files', metavar='FILES', type=str, nargs='+', help='files to watch')
@@ -35,6 +36,7 @@ def checked_run(command):
         run(command)
 
 def run(command):
+    # TODO: check command result and log on errors
     subprocess.call(' '.join(command), shell=True)
 
 def watch(files):
@@ -49,14 +51,15 @@ def watch(files):
                 callback(changed_files)
 
         def wait_for_changes(self):
-            # TODO: check inotifywait result
             cmd = ['inotifywait', '-e', 'modify', '--'] + self.files
             opts = {
-                'stdout': subprocess.DEVNULL,
                 'stderr': subprocess.DEVNULL,
             }
-            subprocess.call(cmd, **opts)
-            return self.files
+            output = subprocess.check_output(cmd, **opts)
+            return self.extract_changed_file(output)
+
+        def extract_changed_file(self, inotify_output):
+            return inotify_output.decode()[:-9]
 
     return Watcher(files)
 

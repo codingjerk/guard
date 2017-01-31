@@ -12,38 +12,55 @@ def main():
         pass
 
 def guard(args):
-    checked_run(args.init, args.mute)
-    if args.run_command_on_start:
-        checked_run(args.command, args.mute)
+    class Logger:
+        def __init__(self, level):
+            self.level = level
 
-    watch(args.files).then(lambda changed_file: [
-        checked_run(args.command, args.mute),
+        def log(self, level, *args):
+            if level <= self.level:
+                print('[GUARD]:', *args, file=sys.stderr)
+
+    logger = Logger(args.verbosity)
+
+    checked_run(args.init, args.mute, logger.log)
+    if args.run_command_on_start:
+        checked_run(args.command, args.mute, logger.log)
+
+    watch(args.files, logger.log).then(lambda changed_file: [
+        checked_run(args.command, args.mute, logger.log),
     ])
 
 def parse_args():
-    # TODO: add loging level
     # TODO: allow to specify unique command for each file, like -u 'test {}'
     parser = argparse.ArgumentParser(description='Run commands on files changes.')
+
     parser.add_argument('files', metavar='FILES', type=str, nargs='+', help='files to watch')
     parser.add_argument('-c', '--command', metavar='COMMAND', type=str, nargs='+', required=True, help='command to run on files changes')
     parser.add_argument('-s', '--run-command-on-start', action='store_const', const=True, default=False, help='run main command on guard init')
     parser.add_argument('-i', '--init', metavar='INIT_COMMAND', type=str, nargs='+', help='command to run on guard init')
     parser.add_argument('-m', '--mute', action='store_const', const=True, default=False, help="hide commands output")
+    parser.add_argument('-v', '--verbosity', type=int, choices=[0, 1, 2, 3], default=0, help='increase output verbosity')
 
     return parser.parse_args()
 
-def checked_run(command, mute=False):
+def checked_run(command, mute, log):
     if command is not None:
-        run(command, mute)
+        run(command, mute, log)
 
-def run(command, mute=False):
+def run(command, mute, log):
+    cmd = ' '.join(command)
     opts = {} if not mute else {
         'stdout': subprocess.DEVNULL,
         'stderr': subprocess.DEVNULL,
     }
-    result = subprocess.check_call(' '.join(command), shell=True, **opts)
 
-def watch(files):
+    log(3, '$', cmd)
+    try:
+        subprocess.check_call(cmd, shell=True, **opts)
+    except subprocess.CalledProcessError as e:
+        log(1, 'Command', cmd, 'exited with non-zero code')
+
+def watch(files, log):
     class Watcher:
         def __init__(self, files):
             self.files = files
@@ -60,7 +77,10 @@ def watch(files):
                 'stderr': subprocess.DEVNULL,
             }
             output = subprocess.check_output(cmd, **opts)
-            return self.extract_changed_file(output)
+            changed_file = self.extract_changed_file(output)
+
+            log(2, changed_file, 'was changed')
+            return changed_file
 
         def extract_changed_file(self, inotify_output):
             return inotify_output.decode()[:-9]

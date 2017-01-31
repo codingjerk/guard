@@ -11,7 +11,7 @@ Command line utility to run tasks on file(s) change
 ```sh
 $ git clone ...
 $ cd guard
-$ sudo install -d /usr/bin guard
+$ sudo install guard /usr/bin
 ```
 
 ## Usage

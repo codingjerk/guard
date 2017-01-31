@@ -17,7 +17,7 @@ $ sudo install guard /usr/bin
 ## Usage
 
 ```sh
-$ guard <FILES TO WATCH*> -c <COMMAND> [-i <INIT>] [-s]
+$ guard <FILES TO WATCH*> -c <COMMAND> [-i <INIT>] [-s] [-m] [-v {0,1,2,3}]
 ```
 
 As example:

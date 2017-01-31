@@ -1,24 +1,30 @@
 #!/usr/bin/env python
 
 import argparse
+import time
 
 def main():
-    # TODO: check for file count (not zero)
-    # TODO: allow to specify unique command for each file, like -u 'test {}'
-    pass
+    args = parse_args()
+    guard(args)
 
 def guard(args):
     checked_run(args.init)
     if args.run_command_on_start:
         checked_run(args.command)
 
-    while True:
-        # TODO: wait for file changes
+    watch(args.files).then(lambda changed_file: [
         checked_run(args.command)
+    ])
 
 def parse_args():
-    # TODO: parse args
-    pass
+    # TODO: allow to specify unique command for each file, like -u 'test {}'
+    parser = argparse.ArgumentParser(description='Run commands on files changes.')
+    parser.add_argument('files', metavar='FILES', type=str, nargs='+', help='files to watch')
+    parser.add_argument('-c', '--command', metavar='COMMAND', type=str, nargs='+', required=True, help='command to run on files changes')
+    parser.add_argument('-s', '--run-command-on-start', action='store_const', const=True, default=False, help='run main command on guard init')
+    parser.add_argument('-i', '--init', metavar='INIT_COMMAND', type=str, nargs='+', help='command to run on guard init')
+
+    return parser.parse_args()
 
 def checked_run(command):
     if command is not None:
@@ -26,7 +32,22 @@ def checked_run(command):
 
 def run(command):
     # TODO: run command
-    pass
+    print('Running', command)
+
+def watch(files):
+    class Watcher:
+        def __init__(self, files):
+            self.files = files
+
+        def then(self, callback):
+            while True:
+                changed_files = self.wait_for_changes()
+                callback(changed_files)
+
+        def wait_for_changes(self):
+            return self.files
+
+    return Watcher(files)
 
 if __name__ == '__main__':
     main()

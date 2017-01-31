@@ -6,7 +6,10 @@ import sys
 
 def main():
     args = parse_args()
-    guard(args)
+    try:
+        guard(args)
+    except KeyboardInterrupt:
+        pass
 
 def guard(args):
     checked_run(args.init)

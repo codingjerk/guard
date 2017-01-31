@@ -12,32 +12,36 @@ def main():
         pass
 
 def guard(args):
-    checked_run(args.init)
+    checked_run(args.init, args.mute)
     if args.run_command_on_start:
-        checked_run(args.command)
+        checked_run(args.command, args.mute)
 
     watch(args.files).then(lambda changed_file: [
-        checked_run(args.command),
+        checked_run(args.command, args.mute),
     ])
 
 def parse_args():
-    # TODO: add loging level and allow to hide command output
+    # TODO: add loging level
     # TODO: allow to specify unique command for each file, like -u 'test {}'
     parser = argparse.ArgumentParser(description='Run commands on files changes.')
     parser.add_argument('files', metavar='FILES', type=str, nargs='+', help='files to watch')
     parser.add_argument('-c', '--command', metavar='COMMAND', type=str, nargs='+', required=True, help='command to run on files changes')
     parser.add_argument('-s', '--run-command-on-start', action='store_const', const=True, default=False, help='run main command on guard init')
     parser.add_argument('-i', '--init', metavar='INIT_COMMAND', type=str, nargs='+', help='command to run on guard init')
+    parser.add_argument('-m', '--mute', action='store_const', const=True, default=False, help="hide commands output")
 
     return parser.parse_args()
 
-def checked_run(command):
+def checked_run(command, mute=False):
     if command is not None:
-        run(command)
+        run(command, mute)
 
-def run(command):
-    # TODO: check command result and log on errors
-    subprocess.call(' '.join(command), shell=True)
+def run(command, mute=False):
+    opts = {} if not mute else {
+        'stdout': subprocess.DEVNULL,
+        'stderr': subprocess.DEVNULL,
+    }
+    result = subprocess.check_call(' '.join(command), shell=True, **opts)
 
 def watch(files):
     class Watcher:

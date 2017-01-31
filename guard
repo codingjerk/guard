@@ -32,7 +32,6 @@ def guard(args):
     ])
 
 def parse_args():
-    # TODO: allow to specify unique command for each file, like -u 'test {}'
     parser = argparse.ArgumentParser(description='Run commands on files changes.')
 
     parser.add_argument('files', metavar='FILES', type=str, nargs='+', help='files to watch')

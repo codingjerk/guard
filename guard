@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-import time
+import subprocess
+import sys
 
 def main():
     args = parse_args()
@@ -31,8 +32,7 @@ def checked_run(command):
         run(command)
 
 def run(command):
-    # TODO: run command
-    print('Running', command)
+    subprocess.call(' '.join(command), shell=True)
 
 def watch(files):
     class Watcher:
@@ -42,9 +42,17 @@ def watch(files):
         def then(self, callback):
             while True:
                 changed_files = self.wait_for_changes()
+                # TODO: use async callback
                 callback(changed_files)
 
         def wait_for_changes(self):
+            # TODO: check inotifywait result
+            cmd = ['inotifywait', '-e', 'modify', '--'] + self.files
+            opts = {
+                'stdout': subprocess.DEVNULL,
+                'stderr': subprocess.DEVNULL,
+            }
+            subprocess.call(cmd, **opts)
             return self.files
 
     return Watcher(files)
